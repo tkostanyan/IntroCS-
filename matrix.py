@@ -1,3 +1,5 @@
+import json
+
 class Matrix:
     ''' 
         Creates an object Matrix
@@ -5,8 +7,8 @@ class Matrix:
         :param fillValues:(int, float) -> a number with which matrix will be filled, default is 0
         :param spiralmatrix:(bool) -> if the matrix should be spiral or not, default is False
         :param loadMatrix:(str) -> the path of json file if you want to load your own matrix
-        '''
-    def __init__(self, shape, fillValues = 0, spiralmatrix = False, loadMatrix = None):
+    '''
+    def __init__(self, shape, fillValues=0, spiral=False, loadMatrix=None):
         
         try:
             self.x, self.y = shape
@@ -15,48 +17,53 @@ class Matrix:
             
         if (type(fillValues) != int) and (type(fillValues) != float):
             print('Invalid arguments for fillValues parametr')
-            return None
         
-        elif spiralmatrix and (shape[0] != shape[1]):
+        elif spiral and (shape[0] != shape[1]):
             print('For spiral matrix should be square')
-            return None
-        elif loadMatrix != None and type(loadMatrix) != str:
-                print('Invalid arguments for loadMatrix parametr')
-                return None
+
+        elif loadMatrix is not None and type(loadMatrix) != str:
+            print('Invalid arguments for loadMatrix parametr')
+
         else:
-            self.spiralmatrix = spiralmatrix
+            self.spiral = spiral
             self.fillValues = fillValues
             self.path = loadMatrix
             self.matrix = None
-            
-        
+
     def constuctMatrix(self):
         if self.path:
-            self.matrix = loadMatrixFromFile(self.path)
-            
-        elif self.spiralmatrix:
-            self.matrix = spiralmatrix(self.x)
+            self.matrix = self.loadMatrixFromFile(self.path)
+        elif self.spiral:
+            self.matrix = self.spiralmatrix(self.x)
         else:
-            self.matrix = generate_matrix((self.x, self.y), self.fillValues)
-        
+            self.matrix = self.generate_matrix((self.x, self.y), self.fillValues)
         return self.matrix
-    
-    
+
+
     def saveMatrixToFile(self, matrix, path):
         with open(path, 'w') as f:
             json.dump(matrix, f)
             
-            
-    def loadMatrixFromFile(path):
+
+    def loadMatrixFromFile(self, path):
         with open(path) as f:
             matrix = json.load(f)
-    
         return matrix
-        
-        
-    def spiralmatrix(N):
+
+
+    def generate_matrix(self, shape, val):
+        result = []
+        x, y = shape
+        for i in range(x):
+            result.append([])
+            for j in range(y):
+                result[i].append(val)
+        return result
+
+
+    def spiralmatrix(self, N):
     
-        a = generate_matrix((N, N), 1)
+        a = self.generate_matrix((N, N), 1)
         q = 0
         for j in range(0,N//2):
             x, y = 0, 0
@@ -82,23 +89,32 @@ class Matrix:
 
         return a
 
-    def generate_matrix(shape, val):
-        result = []
-        x, y = shape
-        for i in range(x):
-            result.append([])
-            for j in range(y):
-                result[i].append(val)
-        return result
-    
-    
-    def transpose(m):
-        if (shapeOfmatrix(m) == 1) or (shapeOfmatrix(m) == 2):
-            result = generate_matrix((len(m[0]), len(m)), 0)
+
+    def transpose(self, m):
+        if (self.shapeOfmatrix(m) == 1) or (self.shapeOfmatrix(m) == 2):
+            result = self.generate_matrix((len(m[0]), len(m)), 0)
             for i in range(len(m)):
                 for j in range(len(m[0])):
                     result[j][i] = m[i][j]
-
             return result
+        return None
 
-        return None  
+
+    def shapeOfmatrix(self, m):
+        for i in range(len(m)):
+            if type(m[i]) != list:
+                return -1
+            elif len(m[0]) != len(m[i]):
+                return 0
+            for j in range(len(m[i])):
+                if type(m[i][j]) == list:
+                    return -1
+        if len(m) == len(m[0]):
+            return 2
+        else:
+            return 1
+
+
+obj = Matrix(shape=(2, 2))
+obj.constuctMatrix()
+print(obj.matrix)
